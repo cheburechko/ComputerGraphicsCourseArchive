@@ -1,0 +1,52 @@
+package FF_11312_Cherenkov_PR.gui;
+
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+
+import javax.swing.JColorChooser;
+import javax.swing.JFormattedTextField;
+
+import FF_11312_Cherenkov_PR.matrix.Point;
+import FF_11312_Cherenkov_PR.model.LightSource;
+
+public class LightDialog extends AbstractOptionDialog {
+	private JFormattedTextField xf, yf, zf, intf;
+	private LightSource light;
+
+	public LightDialog(LightSource l) {
+		super();
+		light = l;
+		Point p = light.getPosition();
+		xf = addField("X", p.getX());
+		yf = addField("Y", p.getY());
+		zf = addField("Z", p.getZ());
+		intf = addField("Intensity", light.getIntensity());
+		addButton("Apply", "apply");
+		addButton("Close", "close");
+		addButton("Set color", "color");
+		pack();
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+
+		if (e.getActionCommand().equals("apply")) {
+
+			double x = ((Number) xf.getValue()).doubleValue();
+			double y = ((Number) yf.getValue()).doubleValue();
+			double z = ((Number) zf.getValue()).doubleValue();
+			double intensity = ((Number) intf.getValue()).doubleValue();
+
+			light.setPosition(new Point(x, y, z));
+			light.setIntensity(intensity);
+			light.notifyObservers();
+		} else if (e.getActionCommand().equals("close")) {
+			dispose();
+		} else if (e.getActionCommand().equals("color")) {
+			Color c = JColorChooser.showDialog(this, "Set light color",
+					light.getColor());
+			if (c != null)
+				light.setColor(c);
+		}
+	}
+}

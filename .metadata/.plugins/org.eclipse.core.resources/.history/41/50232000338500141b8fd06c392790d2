@@ -1,0 +1,92 @@
+package FF_11312_Cherenkov_PR.gui;
+
+import java.awt.Color;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JColorChooser;
+import javax.swing.JFormattedTextField;
+import javax.swing.JOptionPane;
+
+import FF_11312_Cherenkov_PR.model.Parameters;
+
+/**
+ * This is dialog for changing some rendering options.
+ * 
+ * @author Pavel Cherenkov
+ * 
+ */
+public class OptionDialog extends AbstractOptionDialog implements ActionListener {
+	private JFormattedTextField tStepsField, phiStepsField, minTField,
+			maxTField, minPhiField, maxPhiField, znField, zfField, swField,
+			shField;
+	private Parameters params;
+
+	/**
+	 * Default constructor
+	 * 
+	 * @param params
+	 *            rendering parameters
+	 */
+	public OptionDialog(Parameters params) {
+		this.params = params;
+		setLayout(new GridLayout(0, 2));
+
+		tStepsField = addField("t steps", new Integer(params.gettSteps()));
+		phiStepsField = addField("phi steps", new Integer(params.getPhiSteps()));
+		minTField = addField("min t", new Double(params.getMinT()));
+		maxTField = addField("max t", new Double(params.getMaxT()));
+		minPhiField = addField("min phi", new Double(params.getMinPhi()));
+		maxPhiField = addField("max phi", new Double(params.getMaxPhi()));
+		znField = addField("zn", new Double(params.getZn()));
+		zfField = addField("zf", new Double(params.getZf()));
+		swField = addField("sw", new Double(params.getSw()));
+		shField = addField("sh", new Double(params.getSh()));
+
+		addButton("Apply", "apply");
+		addButton("Close", "close");
+		addButton("Set background", "background");
+		addButton("Set ambient", "ambient");
+		pack();
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		if (e.getActionCommand().equals("apply")) {
+			int tSteps = ((Number) tStepsField.getValue()).intValue();
+			int phiSteps = ((Number) phiStepsField.getValue()).intValue();
+			double minT = ((Number) minTField.getValue()).doubleValue();
+			double maxT = ((Number) maxTField.getValue()).doubleValue();
+			double minPhi = ((Number) minPhiField.getValue()).doubleValue();
+			double maxPhi = ((Number) maxPhiField.getValue()).doubleValue();
+			double zn = ((Number) znField.getValue()).doubleValue();
+			double zf = ((Number) zfField.getValue()).doubleValue();
+			double sw = ((Number) swField.getValue()).doubleValue();
+			double sh = ((Number) shField.getValue()).doubleValue();
+
+			if (tSteps < 1 || phiSteps < 1) {
+				JOptionPane.showMessageDialog(this,
+						"Amount of steps should be at least 1", "Error",
+						JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+
+			params.update(tSteps, phiSteps, minT, maxT, minPhi, maxPhi, zn, zf,
+					sw, sh);
+		} else if (e.getActionCommand().equals("close")) {
+			dispose();
+		} else if (e.getActionCommand().equals("background")) {
+			Color c = JColorChooser.showDialog(this, "Set background color",
+					params.getBackground());
+			if (c != null)
+				params.setBackground(c);
+		} else if (e.getActionCommand().equals("ambient")) {
+			Color c = JColorChooser.showDialog(this, "Set ambient color",
+					params.getAmbient());
+			if (c != null)
+				params.setAmbient(c);
+		}
+
+	}
+}

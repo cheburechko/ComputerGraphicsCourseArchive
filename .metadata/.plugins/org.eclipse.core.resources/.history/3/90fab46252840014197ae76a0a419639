@@ -1,0 +1,323 @@
+package FF_11312_Cherenkov_PR.gui;
+
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Polygon;
+import java.util.ArrayList;
+import java.util.TreeSet;
+
+import FF_11312_Cherenkov_PR.coords.ViewCoordTransformer;
+import FF_11312_Cherenkov_PR.matrix.Point;
+import FF_11312_Cherenkov_PR.matrix.transformation.ScaleTransform;
+import FF_11312_Cherenkov_PR.model.Camera;
+import FF_11312_Cherenkov_PR.model.Parameters;
+import FF_11312_Cherenkov_PR.model.Scene;
+import FF_11312_Cherenkov_PR.model.Surface;
+import FF_11312_Cherenkov_PR.model.Triangle;
+import FF_11312_Cherenkov_PR.model.Vertex;
+
+public class PolygonRenderer {
+	private static final double minx = -1;
+	private static final double miny = -1;
+	private static final double minz = 0;
+	private static final double maxx = 1;
+	private static final double maxy = 1;
+	private static final double maxz = 1;
+
+	private ViewCoordTransformer trans;
+	private LightTracer tracer;
+
+	/**
+	 * Default constructor
+	 */
+	public PolygonRenderer() {
+		trans = new ViewCoordTransformer();
+		tracer = new LightTracer();
+	}
+
+	/**
+	 * Clips the segment
+	 * 
+	 * @param given
+	 *            segment
+	 * @return false is segment does not lie in visible volume, true otherwise
+	 */
+	private boolean clipTriangle(Triangle t) {
+		for (int i = 0; i < 3; i++) {
+			Point p = t.get(i);
+			if (p.getX() < minx || p.getX() > maxx || p.getY() < miny
+					|| p.getY() > maxy || p.getZ() < minz || p.getZ() > maxz)
+				return false;
+		}
+		return true;
+	}
+
+	private void createTriangle(Vertex v1, Vertex v2, Vertex v3,
+			ArrayList<Triangle> polygons) {
+		Point p1 = v1.getPoint().mult(-1);
+		Point surfNormal = v3.getPoint().add(p1)
+				.vectorProduct(v2.getPoint().add(p1));
+		Point avgNormal = v1.getNormal()
+				.add(v2.getNormal().add(v3.getNormal()));
+		int material;
+		if (surfNormal.scalarProduct(avgNormal) < 0)
+			surfNormal.multInPlace(-1);
+
+		if (Camera.direction.scalarProduct(surfNormal) < 0)
+			material = 0;
+		else
+			material = 1;
+
+		polygons.add(new Triangle(v1, v2, v3, material));
+	}
+
+	private void drawLine(Point p1, Point p2, int[] line, int offset,
+			boolean chooseMax) {
+		int x = 0;
+		int y = 0;
+		int p1x = trans.imageX(p1.getX()), p1y = trans.imageY(p1.getY());
+		int dy = trans.imageY(p2.getY()) - p1y;
+		int dx = trans.imageX(p2.getX()) - p1x;
+		line[dy + p1y - offset] = dx + p1x;
+		line[p1y - offset] = p1x;
+
+		// Translate line to 1st quarter, dy<dx
+		int orientX = 1;
+		int orientY = 1;
+		int swap = 0;
+
+		if (dy < 0) {
+			orientY = -1;
+			dy = -dy;
+		}
+
+		if (dx < 0) {
+			orientX = -1;
+			dx = -dx;
+		}
+
+		if (dy > dx) {
+			swap = 1;
+			dx = dx + dy;
+			dy = dx - dy;
+			dx = dx - dy;
+		}
+
+		// Bresenham algorithm.
+		int err = 0;
+		int oldy = p1y;
+		while (x < dx) {
+			int realx = p1x + orientX * (x * (1 - swap) + y * swap);
+			int realy = p1y + orientY * (y * (1 - swap) + x * swap);
+
+			x++;
+			err += 2 * dy;
+
+			if (err > dx) {
+				err -= 2 * dx;
+				y++;
+			}
+
+			if (oldy != realy) {
+				line[realy - offset] = realx;
+				oldy = realy;
+			} else {
+				if (chooseMax)
+					line[realy - offset] = Math
+							.max(realx, line[realy - offset]);
+				else
+					line[realy - offset] = Math
+							.min(realx, line[realy - offset]);
+			}
+
+		}
+	}
+
+	private void drawTriangle(Triangle t, BigImage image) {
+		// Determine points position
+		Vertex maxy = t.getVertex(0), miny = maxy, mid = miny;
+		for (int i = 1; i < 3; i++) {
+			Vertex p = t.getVertex(i);
+			if (p.getPoint().getY() > maxy.getPoint().getY())
+				maxy = p;
+			if (p.getPoint().getY() < miny.getPoint().getY())
+				miny = p;
+		}
+		for (int i = 0; i < 3; i++)
+			if (t.getVertex(i) != miny && t.getVertex(i) != maxy) {
+				mid = t.getVertex(i);
+				break;
+			}
+
+		int offset = trans.imageY(maxy.getPoint().getY());
+		int height = trans.imageY(miny.getPoint().getY())
+				- trans.imageY(maxy.getPoint().getY());
+		int[] border1 = new int[height + 1];
+		int[] border2 = new int[height + 1];
+		int[] leftBorder = border1;
+		int[] rightBorder = border2;
+
+		boolean swap = false;
+
+		Point negMiny = miny.getPoint().mult(-1);
+		if (mid.getPoint().add(negMiny)
+				.vectorProduct(maxy.getPoint().add(negMiny)).getZ() < 0) {
+			swap = true;
+			leftBorder = border2;
+			rightBorder = border1;
+		}
+
+		// drawLine(maxy.getPoint(), miny.getPoint(), border1, offset, swap);
+		// drawLine(maxy.getPoint(), mid.getPoint(), border2, offset, !swap);
+		// drawLine(mid.getPoint(), miny.getPoint(), border2, offset, !swap);
+
+		Vertex midNeighbour = maxy;
+		int midy = trans.imageY(mid.getPoint().getY());
+		int color;
+		int material = t.getMaterial();
+
+		for (int y = 0; y <= height; y++) {
+			if (y + offset == midy)
+				midNeighbour = miny;
+
+			double ka = (maxy.getPoint().getY() - trans.funcY(y + offset))
+					/ (maxy.getPoint().getY() - miny.getPoint().getY());
+			double kb = (mid.getPoint().getY() - trans.funcY(y + offset))
+					/ (mid.getPoint().getY() - midNeighbour.getPoint().getY());
+			if (ka < 0)
+				ka = 0;
+			if (ka > 1)
+				ka = 1;
+			if (kb < 0)
+				kb = 0;
+			if (kb > 1)
+				kb = 1;
+
+			double x1 = ka * miny.getPoint().getX() + (1 - ka)
+					* maxy.getPoint().getX();
+			double x2 = kb * midNeighbour.getPoint().getX() + (1 - kb)
+					* mid.getPoint().getX();
+
+			// int minx = leftBorder[y];
+			// int maxx = rightBorder[y];
+			int minx = trans.imageX(x1);
+			int maxx = trans.imageX(x2);
+			if (minx > maxx) {
+				int buf = maxx;
+				maxx = minx;
+				minx = buf;
+			}
+			for (int x = minx; x <= maxx; x++) {
+				double kc = (trans.funcX(x) - x1) / (x2 - x1);
+				if (kc < 0)
+					kc = 0;
+				if (kc > 1)
+					kc = 1;
+				color = 0;
+				for (int col = 0; col < 3; col++) {
+					color = color << 8;
+					double Ia = ka * miny.getColor(material, col) + (1 - ka)
+							* maxy.getColor(material, col);
+					double Ib = kb * midNeighbour.getColor(material, col)
+							+ (1 - kb) * mid.getColor(material, col);
+					color += (int) (kc * Ib + (1 - kc) * Ia + 0.5);
+				}
+
+				image.setRGB(x, y + offset, color);
+
+			}
+		}
+	}
+
+	/**
+	 * Renders 3D scene on screen with given camera
+	 * 
+	 * @param scene
+	 *            3D scene
+	 * @param camera
+	 *            camera
+	 * @param image
+	 *            screen area
+	 * @param margin
+	 *            margin on the screen
+	 */
+	public void render(Scene scene, Camera camera, BigImage image, int margin) {
+		tracer.computeLights(scene, camera);
+
+		trans.init(image, margin);
+		Graphics2D g = (Graphics2D) image.getGraphics();
+		Parameters params = camera.getParams();
+
+		g.setBackground(params.getBackground());
+		g.setColor(Color.BLACK);
+
+		g.clearRect(0, 0, image.getWidth(), image.getHeight());
+		g.drawRect(margin, margin, image.getWidth() - 2 * margin,
+				image.getHeight() - 2 * margin);
+
+		ArrayList<Surface> surfaces = scene.getSurfaces();
+		if (surfaces.isEmpty())
+			return;
+
+		TreeSet<Triangle> polygons = new TreeSet<>();
+		for (Surface original : surfaces) {
+			ArrayList<Triangle> unsorted_triangles = new ArrayList<>();
+			Surface surface = original.apply(scene.getTransformation(),
+					scene.getNormalTransformation());
+
+			for (int i = 0; i < surface.getN() - 1; i++)
+				for (int j = 0; j < surface.getM() - 1; j++) {
+					createTriangle(surface.get(i, j), surface.get(i + 1, j),
+							surface.get(i, j + 1), unsorted_triangles);
+					createTriangle(surface.get(i + 1, j + 1),
+							surface.get(i + 1, j), surface.get(i, j + 1),
+							unsorted_triangles);
+				}
+
+			surface.applyInPlace(camera.getTransform(), new ScaleTransform(1.,
+					1., 1.));
+
+			for (int i = 0; i < surface.getN(); i++)
+				for (int j = 0; j < surface.getM(); j++) {
+					Point p = surface.get(i, j).getPoint();
+					p.multInPlace(1. / p.getW());
+				}
+
+			polygons.addAll(unsorted_triangles);
+			int width = 4;
+
+			int x[] = new int[3];
+			int y[] = new int[3];
+			Polygon p = new Polygon(x, y, 3);
+			p.xpoints = x;
+			p.ypoints = y;
+			p.npoints = 3;
+
+			for (Triangle t : polygons) {
+				if (clipTriangle(t))
+					drawTriangle(t, image);
+				/*
+				 * for (int i = 0; i < 3; i++) { Point point = t.get(i); x[i] =
+				 * trans.imageX(point.getX()); y[i] =
+				 * trans.imageY(point.getY()); } g.setColor(Color.black);
+				 * g.fillPolygon(p); g.setColor(Color.WHITE); g.drawPolygon(p);
+				 * 
+				 * int m = t.getMaterial();
+				 * 
+				 * for (int i = 0; i < 3; i++) { Vertex v = t.getVertex(i);
+				 * Point point = v.getPoint(); g.setColor(new
+				 * Color(v.getColor(m, 0), v.getColor(m, 1), v .getColor(m,
+				 * 2))); g.fillRect(trans.imageX(point.getX()) - width,
+				 * trans.imageY(point.getY()) - width, 2 * width, 2 * width);
+				 * g.setColor(Color.white);
+				 * g.drawRect(trans.imageX(point.getX()) - width,
+				 * trans.imageY(point.getY()) - width, 2 * width, 2 * width);
+				 * 
+				 * }
+				 */
+			}
+
+		}
+
+	}
+}

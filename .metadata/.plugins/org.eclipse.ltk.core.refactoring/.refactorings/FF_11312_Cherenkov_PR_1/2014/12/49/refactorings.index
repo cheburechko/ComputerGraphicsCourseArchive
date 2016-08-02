@@ -1,0 +1,13 @@
+1417860451150	Rename package 'FF_11312_Cherenkov_WF'
+1417860478204	Copy package
+1417860491704	Delete element
+1417860542419	Rename package 'FF_11312_Cherenkov_WF.coords'
+1417860555121	Rename package 'FF_11312_Cherenkov_WF.gui'
+1417860565806	Rename package 'FF_11312_Cherenkov_WF.gui.editor'
+1417860576976	Rename package 'FF_11312_Cherenkov_WF.matrix'
+1417860589453	Rename package 'FF_11312_Cherenkov_WF.matrix.transformation'
+1417860598183	Rename package 'FF_11312_Cherenkov_WF.model'
+1417860609602	Rename package 'FF_11312_Cherenkov_WF.resources'
+1417863555615	Delete element
+1417867566996	Rename resource 'FF_11312_Cherenkov_WF_Data'
+1417873345429	Rename type 'SceneRenderer'

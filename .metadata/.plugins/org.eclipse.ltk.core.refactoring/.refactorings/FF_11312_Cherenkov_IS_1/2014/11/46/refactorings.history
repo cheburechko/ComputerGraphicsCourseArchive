@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Copy element &apos;FF_11312_Cherenkov_IS_About&apos; to &apos;FF_11312_Cherenkov_Filt_1&apos;&#x0A;- Original project: &apos;FF_11312_Cherenkov_IS_1&apos;&#x0A;- Destination element: &apos;FF_11312_Cherenkov_Filt_1&apos;&#x0A;- Original element: &apos;FF_11312_Cherenkov_IS_About&apos;" description="Copy file" destination="=FF_11312_Cherenkov_Filt_1" element1="FF_11312_Cherenkov_IS_About" files="1" flags="589830" folders="0" id="org.eclipse.jdt.ui.copy" policy="org.eclipse.jdt.ui.copyResources" stamp="1416046251280" units="0" version="1.0"/>
+</session>

@@ -1,0 +1,32 @@
+package FF_11312_Cherenkov_PR.model;
+
+import java.awt.Color;
+
+public class Material {
+	private double kPhong;
+	private Color specular, difusion;
+
+	public double getkPhong() {
+		return kPhong;
+	}
+
+	public void setkPhong(double kPhong) {
+		this.kPhong = kPhong;
+	}
+
+	public Material(Color difusion, Color specular, double kPhong) {
+		super();
+		diff = new double[] { rd, gd, bd };
+		spec = new double[] { rs, gs, bs };
+		this.kPhong = kPhong;
+	}
+
+	public double getDiffusion(int index) {
+		return diff[index];
+	}
+
+	public double getSpecular(int index) {
+		return spec[index];
+	}
+
+}

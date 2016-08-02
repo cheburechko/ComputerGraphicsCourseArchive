@@ -1,0 +1,52 @@
+package FF_11312_Cherenkov_PR.model;
+
+import java.awt.Color;
+import java.util.Observable;
+
+import FF_11312_Cherenkov_PR.matrix.Point;
+
+public class LightSource extends Observable {
+	private Color color;
+	private Point position;
+	private double intensity;
+
+	public double getIntensity() {
+		return intensity;
+	}
+
+	public void setIntensity(double intensity) {
+		this.intensity = intensity;
+		setChanged();
+	}
+
+	public Color getColor() {
+		return color;
+	}
+
+	public void setColor(Color color) {
+		this.color = color;
+		setChanged();
+		notifyObservers();
+	}
+
+	public Point getPosition() {
+		return position;
+	}
+
+	public void setPosition(Point position) {
+		this.position = position;
+		setChanged();
+	}
+
+	public LightSource(Color color, Point position) {
+		super();
+		this.color = color;
+		this.position = position;
+		this.intensity = 10;
+	}
+
+	public boolean isOn() {
+		return color.getRGB() != 0;
+	}
+
+}

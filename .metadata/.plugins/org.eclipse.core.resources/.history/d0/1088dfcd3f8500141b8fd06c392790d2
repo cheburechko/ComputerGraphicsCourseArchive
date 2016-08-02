@@ -1,0 +1,87 @@
+package FF_11312_Cherenkov_PR.model;
+
+import java.util.Observable;
+import java.util.Observer;
+
+import FF_11312_Cherenkov_PR.matrix.Point;
+import FF_11312_Cherenkov_PR.matrix.transformation.Transformation;
+
+/**
+ * A point with a normal
+ * 
+ * @author Pavel Cherenkov
+ * 
+ */
+public class Vertex extends Observable implements Observer {
+	private Point point;
+	private Point normal;
+	private int color[][];
+
+	public Point getPoint() {
+		return point;
+	}
+
+	public void setPoint(Point point) {
+		this.point.deleteObserver(this);
+		this.point = point;
+		point.addObserver(this);
+	}
+
+	public Point getNormal() {
+		return normal;
+	}
+
+	public void setNormal(Point normal) {
+		this.normal.deleteObserver(this);
+		this.normal = normal;
+		normal.addObserver(this);
+	}
+
+	public Vertex(Point point, Point normal) {
+		this.point = point;
+		this.normal = normal;
+		this.normal.multInPlace(1. / normal.length());
+		this.normal.setW(this.point.length());
+		point.addObserver(this);
+		normal.addObserver(this);
+		color = new int[2][3];
+	}
+
+	public Vertex(Point point, Point normal, int[][] color) {
+		this(point, normal);
+		this.color = new int[2][3];
+		for (int j = 0; j < 2; j++)
+			for (int i = 0; i < 3; i++)
+				this.color[j][i] = color[j][i];
+	}
+
+	public void apply(Transformation pt, Transformation nt) {
+		point.deleteObserver(this);
+		point = pt.mult(point);
+		point.addObserver(this);
+
+		normal.deleteObserver(this);
+		normal = nt.mult(normal);
+		// normal.multInPlace(1. / normal.length());
+		// normal.setW(point.length());
+		normal.addObserver(this);
+	}
+
+	public Vertex applyAndCopy(Transformation pt, Transformation nt) {
+		return new Vertex(pt.mult(point), nt.mult(normal), color);
+	}
+
+	public int getColor(int j, int i) {
+		return color[j][i];
+	}
+
+	public void setColor(int j, int i, double value) {
+		color[j][i] = Math.max(0, Math.min((int) (value + 0.5), 255));
+	}
+
+	@Override
+	public void update(Observable o, Object arg) {
+		setChanged();
+		notifyObservers(arg);
+	}
+}

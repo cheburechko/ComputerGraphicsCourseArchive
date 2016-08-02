@@ -1,0 +1,47 @@
+package FF_11312_Cherenkov_PR.model;
+
+import java.awt.Color;
+
+import FF_11312_Cherenkov_PR.matrix.Point;
+
+public class LightSource {
+	private Color color;
+	private Point position;
+	private double intensity;
+
+	public double getIntensity() {
+		return intensity;
+	}
+
+	public void setIntensity(double intensity) {
+		this.intensity = intensity;
+	}
+
+	public Color getColor() {
+		return color;
+	}
+
+	public void setColor(Color color) {
+		this.color = color;
+	}
+
+	public Point getPosition() {
+		return position;
+	}
+
+	public void setPosition(Point position) {
+		this.position = position;
+	}
+
+	public LightSource(Color color, Point position) {
+		super();
+		this.color = color;
+		this.position = position;
+		this.intensity = 10;
+	}
+
+	public boolean isOn() {
+		return color.getRGB() != 0;
+	}
+
+}

@@ -1,0 +1,76 @@
+package FF_11312_Cherenkov_PR.gui;
+
+import java.awt.Color;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+
+import javax.swing.JColorChooser;
+import javax.swing.JFormattedTextField;
+import javax.swing.JOptionPane;
+
+import FF_11312_Cherenkov_PR.model.Material;
+import FF_11312_Cherenkov_PR.model.Parameters;
+
+public class MaterialDialog extends AbstractOptionDialog {
+	private JFormattedTextField kPhong;
+	private Material mat;
+
+	/**
+	 * Default constructor
+	 * 
+	 * @param params
+	 *            rendering parameters
+	 */
+	public MaterialDialog(Material m) {
+		super();
+		mat = m;
+		
+		
+		shField = addField("sh", new Double(params.getSh()));
+
+		addButton("Apply", "apply");
+		addButton("Close", "close");
+		addButton("Set background", "background");
+		addButton("Set ambient", "ambient");
+		pack();
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		if (e.getActionCommand().equals("apply")) {
+			int tSteps = ((Number) tStepsField.getValue()).intValue();
+			int phiSteps = ((Number) phiStepsField.getValue()).intValue();
+			double minT = ((Number) minTField.getValue()).doubleValue();
+			double maxT = ((Number) maxTField.getValue()).doubleValue();
+			double minPhi = ((Number) minPhiField.getValue()).doubleValue();
+			double maxPhi = ((Number) maxPhiField.getValue()).doubleValue();
+			double zn = ((Number) znField.getValue()).doubleValue();
+			double zf = ((Number) zfField.getValue()).doubleValue();
+			double sw = ((Number) swField.getValue()).doubleValue();
+			double sh = ((Number) shField.getValue()).doubleValue();
+
+			if (tSteps < 1 || phiSteps < 1) {
+				JOptionPane.showMessageDialog(this,
+						"Amount of steps should be at least 1", "Error",
+						JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+
+			params.update(tSteps, phiSteps, minT, maxT, minPhi, maxPhi, zn, zf,
+					sw, sh);
+		} else if (e.getActionCommand().equals("close")) {
+			dispose();
+		} else if (e.getActionCommand().equals("background")) {
+			Color c = JColorChooser.showDialog(this, "Set background color",
+					params.getBackground());
+			if (c != null)
+				params.setBackground(c);
+		} else if (e.getActionCommand().equals("ambient")) {
+			Color c = JColorChooser.showDialog(this, "Set ambient color",
+					params.getAmbient());
+			if (c != null)
+				params.setAmbient(c);
+		}
+
+	}
+}

@@ -1,0 +1,71 @@
+package FF_11312_Cherenkov_PR.model;
+
+import FF_11312_Cherenkov_PR.matrix.Point;
+import FF_11312_Cherenkov_PR.matrix.transformation.Transformation;
+
+/**
+ * 
+ * @author thepunchy
+ * 
+ */
+public class Surface {
+	private Vertex surface[][];
+	private int n, m;
+	private Point minP, maxP;
+
+	public Point getMinP() {
+		return minP;
+	}
+
+	public Point getMaxP() {
+		return maxP;
+	}
+
+	public int getN() {
+		return n;
+	}
+
+	public int getM() {
+		return m;
+	}
+
+	public Surface(int n, int m) {
+		this.n = n;
+		this.m = m;
+		surface = new Vertex[n][m];
+	}
+
+	public void set(int x, int y, Vertex v) {
+		surface[x][y] = v;
+		if (minP == null) {
+			minP = new Point(v.getPoint());
+			maxP = new Point(v.getPoint());
+		} else {
+			minP.setX(Math.min(v.getPoint().getX(), minP.getX()));
+			minP.setY(Math.min(v.getPoint().getY(), minP.getY()));
+			minP.setZ(Math.min(v.getPoint().getZ(), minP.getZ()));
+			maxP.setX(Math.max(v.getPoint().getX(), maxP.getX()));
+			maxP.setY(Math.max(v.getPoint().getY(), maxP.getY()));
+			maxP.setZ(Math.max(v.getPoint().getZ(), maxP.getZ()));
+		}
+	}
+
+	public Vertex get(int x, int y) {
+		return surface[x][y];
+	}
+
+	public Surface apply(Transformation pt, Transformation nt) {
+		Surface result = new Surface(n, m);
+		for (int x = 0; x < n; x++)
+			for (int y = 0; y < m; y++)
+				result.surface[x][y] = surface[x][y].applyAndCopy(pt, nt);
+		return result;
+	}
+
+	public void applyInPlace(Transformation pt, Transformation nt) {
+		for (int x = 0; x < n; x++)
+			for (int y = 0; y < m; y++)
+				surface[x][y].apply(pt, nt);
+	}
+
+}

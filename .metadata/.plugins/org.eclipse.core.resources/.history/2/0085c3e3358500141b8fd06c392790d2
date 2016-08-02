@@ -1,0 +1,128 @@
+package FF_11312_Cherenkov_PR.gui;
+
+import java.awt.Dialog;
+import java.awt.Frame;
+import java.awt.GraphicsConfiguration;
+import java.awt.GridLayout;
+import java.awt.Window;
+import java.awt.event.ActionListener;
+import java.text.NumberFormat;
+import java.util.Locale;
+
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+
+/**
+ * This is ancestor of JDialog with some helpful funcitons.
+ * 
+ * @author Pavel Cherenkov
+ * 
+ */
+public abstract class AbstractOptionDialog extends JDialog implements
+		ActionListener {
+
+	public AbstractOptionDialog() {
+		super();
+		setLayout(new GridLayout(0, 2));
+	}
+
+	public AbstractOptionDialog(Frame owner) {
+		super(owner);
+	}
+
+	public AbstractOptionDialog(Dialog owner) {
+		super(owner);
+	}
+
+	public AbstractOptionDialog(Window owner) {
+		super(owner);
+	}
+
+	public AbstractOptionDialog(Frame owner, boolean modal) {
+		super(owner, modal);
+	}
+
+	public AbstractOptionDialog(Frame owner, String title) {
+		super(owner, title);
+	}
+
+	public AbstractOptionDialog(Dialog owner, boolean modal) {
+		super(owner, modal);
+	}
+
+	public AbstractOptionDialog(Dialog owner, String title) {
+		super(owner, title);
+	}
+
+	public AbstractOptionDialog(Window owner, ModalityType modalityType) {
+		super(owner, modalityType);
+	}
+
+	public AbstractOptionDialog(Window owner, String title) {
+		super(owner, title);
+	}
+
+	public AbstractOptionDialog(Frame owner, String title, boolean modal) {
+		super(owner, title, modal);
+	}
+
+	public AbstractOptionDialog(Dialog owner, String title, boolean modal) {
+		super(owner, title, modal);
+	}
+
+	public AbstractOptionDialog(Window owner, String title,
+			ModalityType modalityType) {
+		super(owner, title, modalityType);
+	}
+
+	public AbstractOptionDialog(Frame owner, String title, boolean modal,
+			GraphicsConfiguration gc) {
+		super(owner, title, modal, gc);
+	}
+
+	public AbstractOptionDialog(Dialog owner, String title, boolean modal,
+			GraphicsConfiguration gc) {
+		super(owner, title, modal, gc);
+	}
+
+	public AbstractOptionDialog(Window owner, String title,
+			ModalityType modalityType, GraphicsConfiguration gc) {
+		super(owner, title, modalityType, gc);
+	}
+
+	/**
+	 * Helper function for inserting labels and fields
+	 * 
+	 * @param label
+	 *            field description
+	 * @param value
+	 *            initial value
+	 * @return JFormattedTextField object associated with this label
+	 */
+	protected JFormattedTextField addField(String label, Object value) {
+		add(new JLabel(label));
+		NumberFormat format = NumberFormat.getInstance(Locale.ENGLISH);
+		JFormattedTextField field = new JFormattedTextField(format);
+		field.setValue(value);
+		add(field);
+		return field;
+	}
+
+	/**
+	 * Helper function for adding buttons
+	 * 
+	 * @param label
+	 *            button label
+	 * @param command
+	 *            button command
+	 */
+	protected void addButton(String label, String command) {
+		JButton btn = new JButton(label);
+		btn.setActionCommand(command);
+		btn.addActionListener(this);
+		add(btn);
+	}
+
+}

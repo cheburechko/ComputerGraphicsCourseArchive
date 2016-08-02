@@ -1,0 +1,394 @@
+package FF_11312_Cherenkov_PR;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Locale;
+import java.util.Scanner;
+
+import javax.swing.ImageIcon;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+
+import ru.nsu.cg.FileUtils;
+import ru.nsu.cg.MainFrame;
+import FF_11312_Cherenkov_PR.gui.LightDialog;
+import FF_11312_Cherenkov_PR.gui.MaterialDialog;
+import FF_11312_Cherenkov_PR.gui.OptionDialog;
+import FF_11312_Cherenkov_PR.gui.View;
+import FF_11312_Cherenkov_PR.gui.editor.BSplineEditor;
+import FF_11312_Cherenkov_PR.matrix.Point;
+import FF_11312_Cherenkov_PR.model.BSpline;
+import FF_11312_Cherenkov_PR.model.LightSource;
+import FF_11312_Cherenkov_PR.model.Material;
+import FF_11312_Cherenkov_PR.model.Parameters;
+import FF_11312_Cherenkov_PR.model.Scene;
+import FF_11312_Cherenkov_PR.model.SolidOfRevolution;
+
+/**
+ * Main window class
+ * 
+ * @author Pavel Cherenkov
+ */
+public class Main extends MainFrame {
+	final private String extension = "rp";
+	final private String fileDescription = "Wireframe parameters";
+	private View view;
+	private BSpline defaultSpline;
+
+	private Parameters params;
+
+	{
+		Color background = new Color(0, 0, 0);
+		Color ambient = new Color(128, 128, 128);
+		Material frontMat = new Material(Color.RED, Color.RED, 1);
+		Material backMat = new Material(Color.BLUE, Color.BLUE, 1);
+		LightSource l1 = new LightSource(Color.RED, new Point(0, 0, 0));
+		LightSource l2 = new LightSource(Color.BLUE, new Point(0, 0, 1));
+		LightSource l3 = new LightSource(Color.GREEN, new Point(1, 0, 1));
+		params = new Parameters(1, 1, 0, 1, 0, Math.PI * 2, 0, 100, 1, 1,
+				background, ambient, l1, l2, l3, frontMat, backMat);
+		defaultSpline = new BSpline(params);
+
+		defaultSpline.addPoint(new Point(0, 0, 1));
+		defaultSpline.addPoint(new Point(1, 0, 1));
+		defaultSpline.addPoint(new Point(1, 0, 0));
+		defaultSpline.addPoint(new Point(0, 0, 0));
+	}
+
+	/**
+	 * Default constructor
+	 */
+	public Main() {
+		super(800, 600, "Ultimate utility for editing B-Splines");
+
+		try {
+			addSubMenu("File", KeyEvent.VK_F);
+			addMenuItem("File/Open", "Open image", KeyEvent.VK_O, "Folder.gif",
+					"onOpen");
+			addMenuItem("File/Save", "Save destination image", KeyEvent.VK_S,
+					"Save.gif", "onSave");
+			addMenuItem("File/Exit", "Exit application", KeyEvent.VK_X,
+					"Exit.gif", "onExit");
+
+			addSubMenu("Bodies", KeyEvent.VK_S);
+			addMenuItem("Bodies/Add body", "Add new body", KeyEvent.VK_A,
+					"Add.gif", "onAddBody");
+			addMenuItem("Bodies/Delete body", "Delete last body",
+					KeyEvent.VK_D, "Delete.gif", "onDeleteBody");
+			addMenuItem("Bodies/Edit body", "Edit body", KeyEvent.VK_E,
+					"Modify.gif", "onEditBody");
+
+			addSubMenu("Settings", KeyEvent.VK_S);
+			addMenuItem("Settings/Settings", "Change settings", KeyEvent.VK_C,
+					"Tune.gif", "onChangeSettings");
+			addMenuItem("Settings/Materials", "Change materials",
+					KeyEvent.VK_C, "Tune.gif", "onChangeMaterials");
+			addMenuItem("Settings/Lights", "Change lights", KeyEvent.VK_C,
+					"Tune.gif", "onChangeLights");
+			addMenuItem("Settings/Wireframe", "Switch wireframe",
+					KeyEvent.VK_C, "Tune.gif", "onSwitchWireframe");
+
+			addSubMenu("Help", KeyEvent.VK_H);
+			addMenuItem("Help/About...",
+					"Shows program version and copyright information",
+					KeyEvent.VK_A, "About.gif", "onAbout");
+
+			addToolBarButton("File/Open");
+			addToolBarButton("File/Save");
+			addToolBarButton("File/Exit");
+			addToolBarSeparator();
+			addToolBarButton("Bodies/Add body");
+			addToolBarButton("Bodies/Delete body");
+			addToolBarButton("Bodies/Edit body");
+			addToolBarSeparator();
+			addToolBarButton("Settings/Settings");
+			addToolBarButton("Settings/Materials");
+			addToolBarButton("Settings/Lights");
+			addToolBarButton("Settings/Wireframe");
+			addToolBarSeparator();
+			addToolBarButton("Help/About...");
+
+			openFile(new File(FileUtils.getDataDirectory(), "default.wf"));
+
+		} catch (NoSuchMethodException | FileNotFoundException e) {
+			JOptionPane.showMessageDialog(this, e.getMessage(), "Exception",
+					JOptionPane.ERROR_MESSAGE, new ImageIcon(getClass()
+							.getResource("resources/Error.gif")));
+			System.exit(1);
+		}
+	}
+
+	/**
+	 * Initializes program from given file
+	 * 
+	 * @param file
+	 *            source file
+	 * @throws FileNotFoundException
+	 */
+	private void openFile(File file) throws FileNotFoundException {
+		Scanner scanner = new Scanner(file);
+		scanner.useLocale(Locale.ENGLISH);
+
+		params.setBackground(new Color(scanner.nextInt(), scanner.nextInt(),
+				scanner.nextInt()));
+		params.setAmbient(new Color(scanner.nextInt(), scanner.nextInt(),
+				scanner.nextInt()));
+
+		int tSteps = scanner.nextInt();
+		int phiSteps = scanner.nextInt();
+		int scale = scanner.nextInt();
+		double minT = scanner.nextDouble();
+		double maxT = scanner.nextDouble();
+		double minPhi = scanner.nextDouble();
+		double maxPhi = scanner.nextDouble();
+		double zn = scanner.nextDouble();
+		double zf = scanner.nextDouble();
+		double sw = scanner.nextDouble();
+		double sh = scanner.nextDouble();
+		params.update(tSteps, phiSteps, minT, maxT, minPhi, maxPhi, zn, zf, sw,
+				sh);
+
+		if (view != null)
+			remove(view);
+		view = new View(params);
+
+		int bodyCount = scanner.nextInt();
+		for (int i = 0; i < bodyCount; i++) {
+			int pointCount = scanner.nextInt();
+			BSpline spline = new BSpline(params);
+			for (int j = 0; j < pointCount; j++) {
+				spline.addPoint(new Point(scanner.nextDouble(), 0, scanner
+						.nextDouble()));
+			}
+			view.getScene().addBody(new SolidOfRevolution(spline));
+		}
+		add(view, BorderLayout.CENTER);
+		pack();
+		scanner.close();
+	}
+
+	/**
+	 * File/Open - opens a .rp file
+	 */
+	public void onOpen() {
+		File file = this.getOpenFileName(extension, fileDescription);
+		if (file == null)
+			return;
+		try {
+			openFile(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(this, e.getMessage(), "Exception",
+					JOptionPane.ERROR_MESSAGE, new ImageIcon(getClass()
+							.getResource("resources/Error.gif")));
+		}
+	}
+
+	/**
+	 * File/Save - save program parameters and splines as .rp file
+	 */
+	public void onSave() {
+		File file = this.getSaveFileName(extension, fileDescription);
+		if (file == null)
+			return;
+		try {
+			FileWriter writer = new FileWriter(file);
+			writer.write(Integer.toString(params.gettSteps()));
+			writer.write(' ');
+			writer.write(Integer.toString(params.getPhiSteps()));
+			writer.write(' ');
+			writer.write('1');
+			writer.write(' ');
+			writer.write(Double.toString(params.getMinT()));
+			writer.write(' ');
+			writer.write(Double.toString(params.getMaxT()));
+			writer.write(' ');
+			writer.write(Double.toString(params.getMinPhi()));
+			writer.write(' ');
+			writer.write(Double.toString(params.getMaxPhi()));
+			writer.write(' ');
+			writer.write(Double.toString(params.getZn()));
+			writer.write(' ');
+			writer.write(Double.toString(params.getZf()));
+			writer.write(' ');
+			writer.write(Double.toString(params.getSw()));
+			writer.write(' ');
+			writer.write(Double.toString(params.getSh()));
+			writer.write('\n');
+
+			Scene scene = view.getScene();
+			writer.write(Integer.toString(scene.getBodyConut()));
+			writer.write('\n');
+
+			for (int i = 0; i < scene.getBodyConut(); i++) {
+				BSpline spline = scene.getBody(i).getSpline();
+				writer.write(Integer.toString(spline.getPointCount()));
+				writer.write('\n');
+				for (int j = 0; j < spline.getPointCount(); j++) {
+					Point p = spline.getPoint(j);
+					writer.write(Double.toString(p.getX()));
+					writer.write(' ');
+					writer.write(Double.toString(p.getZ()));
+					writer.write('\n');
+				}
+			}
+
+			writer.close();
+
+		} catch (IOException e) {
+			JOptionPane.showMessageDialog(this, e.getMessage(), "Exception",
+					JOptionPane.ERROR_MESSAGE, new ImageIcon(getClass()
+							.getResource("resources/Error.gif")));
+		}
+	}
+
+	/**
+	 * File/Exit - closes application
+	 */
+	public void onExit() {
+		System.exit(0);
+	}
+
+	/**
+	 * Bodies/Add body - adds new body
+	 */
+	public void onAddBody() {
+		if (view.getScene().getBodyConut() >= 10) {
+			JOptionPane.showMessageDialog(this,
+					"Can't have more than 10 bodies", "Error",
+					JOptionPane.ERROR_MESSAGE);
+		}
+		SolidOfRevolution body = new SolidOfRevolution(new BSpline(
+				defaultSpline));
+		view.getScene().addBody(body);
+	}
+
+	/**
+	 * Bodies/Delete body - deletes last created body
+	 */
+	public void onDeleteBody() {
+		if (view.getScene().getBodyConut() > 0)
+			view.getScene().removeBody(view.getScene().getBodyConut() - 1);
+	}
+
+	/**
+	 * Bodies/Edit body - allow to change the spline of the given body
+	 */
+	public void onEditBody() {
+		if (view.getScene().getBodyConut() <= 0) {
+			JOptionPane.showMessageDialog(this, "No bodies left", "Error",
+					JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+		Object[] bodies = new Object[view.getScene().getBodyConut()];
+		for (int i = 0; i < view.getScene().getBodyConut(); i++)
+			bodies[i] = i;
+		int i;
+		try {
+			i = (int) JOptionPane.showInputDialog(this, "Choose body",
+					"Edit body", JOptionPane.INFORMATION_MESSAGE, null, bodies,
+					bodies[0]);
+		} catch (NullPointerException e) {
+			return;
+		}
+
+		BSplineEditor dialog = new BSplineEditor(view.getScene().getBody(i));
+		dialog.setLocationRelativeTo(this);
+		dialog.setVisible(true);
+		dialog.setModalityType(JDialog.ModalityType.APPLICATION_MODAL);
+	}
+
+	/**
+	 * Settings/Settings - opens a dialog for changing program settings
+	 */
+	public void onChangeSettings() {
+		OptionDialog dialog = new OptionDialog(params);
+		dialog.setLocationRelativeTo(this);
+		dialog.setVisible(true);
+		dialog.setModalityType(JDialog.ModalityType.APPLICATION_MODAL);
+	}
+
+	/**
+	 * Settings/Materials - allows to change chosen material
+	 */
+	public void onChangeMaterials() {
+
+		Object[] materials = new Object[] { "Front", "Back" };
+
+		String s;
+		try {
+			s = (String) JOptionPane.showInputDialog(this, "Choose Materials",
+					"Edit material", JOptionPane.INFORMATION_MESSAGE, null,
+					materials, materials[0]);
+		} catch (NullPointerException e) {
+			return;
+		}
+		Material m;
+		if (s.equals(materials[0]))
+			m = params.getFrontMat();
+		else
+			m = params.getBackMat();
+
+		MaterialDialog dialog = new MaterialDialog(m);
+		dialog.setLocationRelativeTo(this);
+		dialog.setVisible(true);
+		dialog.setModalityType(JDialog.ModalityType.APPLICATION_MODAL);
+	}
+
+	/**
+	 * Settings/Lights - allows to change chosen lights
+	 */
+	public void onChangeLights() {
+
+		Object[] lights = new Object[] { 0, 1, 2 };
+
+		int i;
+		try {
+			i = (int) JOptionPane.showInputDialog(this, "Choose lights",
+					"Edit lights", JOptionPane.INFORMATION_MESSAGE, null,
+					lights, lights[0]);
+		} catch (NullPointerException e) {
+			return;
+		}
+		LightSource l = params.getLight(i);
+
+		LightDialog dialog = new LightDialog(l);
+		dialog.setLocationRelativeTo(this);
+		dialog.setVisible(true);
+		dialog.setModalityType(JDialog.ModalityType.APPLICATION_MODAL);
+	}
+
+	/**
+	 * Settings/Wireframe - switches wireframe rendering
+	 */
+	public void onSwitchWireframe() {
+		params.setWireframe(!params.isWireframe());
+	}
+
+	/**
+	 * Help/About... - shows some info
+	 */
+	public void onAbout() {
+		JOptionPane
+				.showMessageDialog(
+						this,
+						"PR, version 1.0\nCopyright � 2014 Pavel Cherenkov, FF, group 11312",
+						"About Filt", JOptionPane.INFORMATION_MESSAGE);
+	}
+
+	/**
+	 * Application main entry point
+	 * 
+	 * @param args
+	 *            command line arguments (unused)
+	 */
+	public static void main(String[] args) {
+		Main mainFrame = new Main();
+		mainFrame.setVisible(true);
+	}
+}

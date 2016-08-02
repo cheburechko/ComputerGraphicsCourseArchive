@@ -1,0 +1,84 @@
+package FF_11312_Cherenkov_PR.model;
+
+import java.awt.Color;
+import java.util.Observable;
+
+/**
+ * Material
+ * 
+ * @author Pavel Cherenkov
+ * 
+ */
+public class Material extends Observable {
+	private double kPhong;
+	private Color specular, diffusion;
+
+	/**
+	 * Get reflection power
+	 * 
+	 * @return reflection power
+	 */
+	public double getkPhong() {
+		return kPhong;
+	}
+
+	/**
+	 * Set reflection power
+	 * 
+	 * @param kPhong
+	 *            reflection power
+	 */
+	public void setkPhong(double kPhong) {
+		this.kPhong = kPhong;
+		setChanged();
+		notifyObservers();
+	}
+
+	/**
+	 * Default constructor
+	 * 
+	 * @param diffusion
+	 *            diffusion color
+	 * @param specular
+	 *            specular color
+	 * @param kPhong
+	 *            reflection power
+	 */
+	public Material(Color diffusion, Color specular, double kPhong) {
+		super();
+		this.diffusion = diffusion;
+		this.specular = specular;
+		this.kPhong = kPhong;
+	}
+
+	/**
+	 * Get diffusion color
+	 * 
+	 * @return diffusion color
+	 */
+	public Color getDiffusion() {
+		return diffusion;
+	}
+
+	/**
+	 * Get specular color
+	 * 
+	 * @return specular color
+	 */
+	public Color getSpecular() {
+		return specular;
+	}
+
+	public void setSpecular(Color specular) {
+		this.specular = specular;
+		setChanged();
+		notifyObservers();
+	}
+
+	public void setDiffusion(Color diffusion) {
+		this.diffusion = diffusion;
+		setChanged();
+		notifyObservers();
+	}
+
+}

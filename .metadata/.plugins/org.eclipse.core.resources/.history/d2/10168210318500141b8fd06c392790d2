@@ -1,0 +1,13 @@
+package FF_11312_Cherenkov_PR.gui;
+
+import java.awt.event.ActionEvent;
+
+public class LightDialog extends AbstractOptionDialog {
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+}

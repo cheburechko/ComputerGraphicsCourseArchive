@@ -1,0 +1,11 @@
+1411803272791	Delete elements
+1411803315250	Rename package 'FF_11312_Cherenkov_LE'
+1411803327853	Rename package 'FF_11312_Cherenkov_LE.resources'
+1411809955972	Encapsulate field 'width'
+1411810264280	Rename type 'DrawableTypes'
+1411810321353	Change method 'getType'
+1411810471417	Move compilation units
+1411810477800	Move compilation units
+1411812315359	Delete element
+1411812364665	Extract interface 'DrawableSerializer'
+1411824735320	Rename local variable 'color'

@@ -1,0 +1,24 @@
+1416652419177	Rename compilation unit 'SolidRevolution.java'
+1416659017418	Move compilation units
+1416659043636	Move compilation units
+1416661562528	Rename type 'BufferedImage'
+1416661812353	Delete element
+1416666799593	Rename method 'getAllPoints'
+1416667591262	Rename package 'FF_11312_Cherenkov_Filt.resources'
+1416730943706	Move compilation unit
+1416731030968	Rename type 'Scale'
+1416732891408	Rename method 'getPoint'
+1416733584383	Rename field 'corner1'
+1416733591518	Rename field 'corner0'
+1416750836864	Move compilation units
+1416750852835	Move compilation unit
+1416752244072	Rename type 'CoordTransformer'
+1416752292965	Extract superclass 'CoordTransformer'
+1416752331127	Rename method 'imageZ'
+1416752348171	Rename local variable 'z'
+1416752375263	Rename method 'splineX'
+1416752411856	Change method 'splineZ'
+1416752448027	Rename field 'zmax'
+1416752469503	Rename field 'imageZmax'
+1416752484450	Rename field 'deltaZ'
+1416753138753	Move compilation units

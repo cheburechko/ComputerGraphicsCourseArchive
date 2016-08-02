@@ -1,0 +1,45 @@
+package FF_11312_Cherenkov_PR.model;
+
+import FF_11312_Cherenkov_PR.matrix.Point;
+
+public class Triangle implements Comparable<Triangle> {
+	private Vertex vertices[];
+	private double z;
+	private int material;
+
+	public Triangle(Vertex p1, Vertex p2, Vertex p3, int material) {
+		super();
+		vertices = new Vertex[3];
+		vertices[0] = p1;
+		vertices[1] = p2;
+		vertices[2] = p3;
+		z = (p1.getPoint().getZ() + p2.getPoint().getZ() + p3.getPoint().getZ()) / 3.;
+		this.material = material;
+	}
+
+	public Point get(int i) {
+		return vertices[i].getPoint();
+	}
+
+	public Vertex getVertex(int i) {
+		return vertices[i];
+	}
+	
+	public int getMaterial()
+	{
+		return material;
+	}
+
+	@Override
+	public int compareTo(Triangle o) {
+		if (z < o.z)
+			return 1;
+		else
+			return -1;
+
+	}
+
+	public double getZ() {
+		return z;
+	}
+}

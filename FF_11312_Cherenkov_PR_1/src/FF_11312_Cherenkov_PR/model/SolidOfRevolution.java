@@ -1,0 +1,121 @@
+package FF_11312_Cherenkov_PR.model;
+
+import java.util.ArrayList;
+import java.util.Observable;
+import java.util.Observer;
+
+import FF_11312_Cherenkov_PR.matrix.transformation.Transformation;
+
+/**
+ * This class represent a solid of the resolution formed by the rotation of the
+ * spline around z axis
+ * 
+ * @author Pavel Cherenkov
+ * 
+ */
+public class SolidOfRevolution extends Observable implements Observer {
+	private BSpline spline;
+	private Parameters params;
+
+	private Surface surface;
+
+	/**
+	 * Default constructor
+	 * 
+	 * @param spline
+	 *            basis spline
+	 */
+	public SolidOfRevolution(BSpline spline) {
+		super();
+		this.spline = spline;
+		this.params = spline.getParams();
+
+		spline.addObserver(this);
+		compile();
+	}
+
+	/**
+	 * Gets the spline
+	 * 
+	 * @return basis spline
+	 */
+	public BSpline getSpline() {
+		return spline;
+	}
+
+	/**
+	 * Sets the spline
+	 * 
+	 * @param spline
+	 *            spline
+	 */
+	public void setSpline(BSpline spline) {
+		this.spline.deleteObserver(this);
+		this.spline = spline;
+		spline.addObserver(this);
+		compile();
+	}
+
+	/**
+	 * Gets rotation transformation around z axis
+	 * 
+	 * @param phi
+	 *            rotation angle
+	 * @return rotation transformation
+	 */
+	public Transformation getPhiTransformation(double phi) {
+		double p[][] = { { Math.cos(phi), 0, 0, 0 },
+				{ Math.sin(phi), 0, 0, 0 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 } };
+		return new Transformation(p);
+	}
+
+	/**
+	 * Computes all of the segments for this body
+	 */
+	public void compile() {
+		ArrayList<Vertex> curve = spline.getSplinePoints();
+		surface = new Surface(params.gettSteps() + 1, params.getPhiSteps() + 1);
+
+		if (curve.isEmpty()) {
+			setChanged();
+			notifyObservers();
+			return;
+		}
+
+		int tSteps = params.gettSteps();
+		double minPhi = params.getMinPhi();
+		double maxPhi = params.getMaxPhi();
+		int phiSteps = params.getPhiSteps();
+
+		Transformation t = getPhiTransformation(minPhi);
+		double step = (maxPhi - minPhi) / phiSteps;
+
+		for (int i = 0; i <= phiSteps; i++) {
+			// build segments for phi = const
+			t = getPhiTransformation(minPhi + i * step);
+			for (int j = 0; j <= tSteps; j++) {
+				Vertex v = curve.get(j).applyAndCopy(t, t);
+				surface.set(j, i, v);
+			}
+		}
+
+		setChanged();
+		notifyObservers();
+	}
+
+	/**
+	 * Get solids surface
+	 * 
+	 * @return surface
+	 */
+	public Surface getSurface() {
+		return surface;
+	}
+
+	@Override
+	public void update(Observable o, Object arg) {
+		compile();
+
+	}
+
+}

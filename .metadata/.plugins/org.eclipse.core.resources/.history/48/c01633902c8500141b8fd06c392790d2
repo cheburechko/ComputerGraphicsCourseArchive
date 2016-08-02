@@ -1,0 +1,7 @@
+package FF_11312_Cherenkov_PR.gui;
+
+import javax.swing.JDialog;
+
+public class MaterialDialog extends JDialog {
+
+}

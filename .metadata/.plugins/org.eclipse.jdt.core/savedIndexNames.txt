@@ -1,0 +1,22 @@
+INDEX VERSION 1.127+/home/thepunchy/Projects/ComputerGraphics/.metadata/.plugins/org.eclipse.jdt.core
+992544363.index
+2513030318.index
+2944654857.index
+3032434592.index
+1515246011.index
+3529362799.index
+1256015491.index
+2160339179.index
+3597294243.index
+1838496479.index
+1156489419.index
+1576317003.index
+446081922.index
+1669393835.index
+639505698.index
+4005945852.index
+4188098185.index
+588451142.index
+2918083503.index
+1748882153.index
+4019773694.index

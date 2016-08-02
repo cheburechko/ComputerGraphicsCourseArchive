@@ -1,0 +1,152 @@
+package FF_11312_Cherenkov_PR.model;
+
+import java.util.Observable;
+import java.util.Observer;
+
+import FF_11312_Cherenkov_PR.matrix.Point;
+import FF_11312_Cherenkov_PR.matrix.transformation.Transformation;
+
+/**
+ * A point with a normal
+ * 
+ * @author Pavel Cherenkov
+ * 
+ */
+public class Vertex extends Observable implements Observer {
+	private Point point;
+	private Point normal;
+	private int color[][];
+
+	/**
+	 * Get point
+	 * 
+	 * @return point
+	 */
+	public Point getPoint() {
+		return point;
+	}
+
+	/**
+	 * Set point
+	 * 
+	 * @param point
+	 *            new point
+	 */
+	public void setPoint(Point point) {
+		this.point.deleteObserver(this);
+		this.point = point;
+		point.addObserver(this);
+	}
+
+	/**
+	 * Get normal
+	 * 
+	 * @return normal
+	 */
+	public Point getNormal() {
+		return normal;
+	}
+
+	/**
+	 * Set normal
+	 * 
+	 * @param normal
+	 *            new normal
+	 */
+	public void setNormal(Point normal) {
+		this.normal.deleteObserver(this);
+		this.normal = normal;
+		normal.addObserver(this);
+	}
+
+	/**
+	 * Default constructor
+	 * 
+	 * @param point
+	 *            point
+	 * @param normal
+	 *            normal
+	 */
+	public Vertex(Point point, Point normal) {
+		this.point = point;
+		this.normal = normal;
+		this.normal.multInPlace(1. / normal.length());
+		this.normal.setW(this.point.length());
+		point.addObserver(this);
+		normal.addObserver(this);
+		color = new int[2][3];
+	}
+
+	/**
+	 * Default constructor with vertex colors
+	 * 
+	 * @param point
+	 *            point
+	 * @param normal
+	 *            normal
+	 * @param color
+	 *            vertex color
+	 */
+	public Vertex(Point point, Point normal, int[][] color) {
+		this(point, normal);
+		this.color = new int[2][3];
+		for (int j = 0; j < 2; j++)
+			for (int i = 0; i < 3; i++)
+				this.color[j][i] = color[j][i];
+	}
+
+	/**
+	 * Apply transformation to a vertex in place
+	 * 
+	 * @param pt
+	 *            point transformation
+	 * @param nt
+	 *            normal transformation
+	 */
+	public void apply(Transformation pt, Transformation nt) {
+		point.deleteObserver(this);
+		point = pt.mult(point);
+		point.addObserver(this);
+
+		normal.deleteObserver(this);
+		normal = nt.mult(normal);
+		// normal.multInPlace(1. / normal.length());
+		// normal.setW(point.length());
+		normal.addObserver(this);
+	}
+
+	/**
+	 * Apply transformations to a vertex, copy vertex
+	 * 
+	 * @param pt
+	 *            point transformation
+	 * @param nt
+	 *            normal transformation
+	 * @return new transformed vertex
+	 */
+	public Vertex applyAndCopy(Transformation pt, Transformation nt) {
+		return new Vertex(pt.mult(point), nt.mult(normal), color);
+	}
+
+	/**
+	 * Get vertex color
+	 * 
+	 * @param j
+	 *            materila (0 - front, 1 - back)
+	 * @param i
+	 * @return
+	 */
+	public int getColor(int j, int i) {
+		return color[j][i];
+	}
+
+	public void setColor(int j, int i, double value) {
+		color[j][i] = Math.max(0, Math.min((int) (value + 0.5), 255));
+	}
+
+	@Override
+	public void update(Observable o, Object arg) {
+		setChanged();
+		notifyObservers(arg);
+	}
+}

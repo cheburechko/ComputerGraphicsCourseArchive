@@ -1,0 +1,53 @@
+package FF_11312_Cherenkov_PR.gui;
+
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+
+import javax.swing.JColorChooser;
+import javax.swing.JFormattedTextField;
+
+import FF_11312_Cherenkov_PR.model.Material;
+
+public class MaterialDialog extends AbstractOptionDialog {
+	private JFormattedTextField kPhongField;
+	private Material mat;
+
+	/**
+	 * Default constructor
+	 * 
+	 * @param params
+	 *            rendering parameters
+	 */
+	public MaterialDialog(Material m) {
+		super();
+		mat = m;
+
+		kPhongField = addField("Reflection power", new Double(m.getkPhong()));
+
+		addButton("Apply", "apply");
+		addButton("Close", "close");
+		pack();
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		if (e.getActionCommand().equals("apply")) {
+
+			double kPhong = ((Number) kPhong.getValue()).doubleValue();
+
+		} else if (e.getActionCommand().equals("close")) {
+			dispose();
+		} else if (e.getActionCommand().equals("background")) {
+			Color c = JColorChooser.showDialog(this, "Set background color",
+					params.getBackground());
+			if (c != null)
+				params.setBackground(c);
+		} else if (e.getActionCommand().equals("ambient")) {
+			Color c = JColorChooser.showDialog(this, "Set ambient color",
+					params.getAmbient());
+			if (c != null)
+				params.setAmbient(c);
+		}
+
+	}
+}

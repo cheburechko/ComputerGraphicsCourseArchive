@@ -1,0 +1,78 @@
+package FF_11312_Cherenkov_Span.serializers;
+
+import java.awt.Point;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Scanner;
+
+import FF_11312_Cherenkov_Span.model.Drawable;
+import FF_11312_Cherenkov_Span.model.Fill;
+
+public class FillSerializer extends DrawableSerializer {
+
+	/**
+	 * Default constructor
+	 */
+	public FillSerializer() {
+		super();
+	}
+
+	/**
+	 * Convert a fill into its text representation
+	 * 
+	 * @param drawable
+	 *            a fill to convert
+	 * @param output
+	 *            write destination
+	 * @throws IOException
+	 *             if some kind of I/O error occurs
+	 */
+	public void write(Drawable drawable, Writer output) throws IOException {
+		Fill fill = (Fill) drawable;
+		output.write("FILL\n");
+		Point p = fill.getPoint();
+		output.write(p.x + " " + p.y + " " + fill.getColor() + " "
+				+ fill.getConnectivity() + "\n");
+	}
+
+	/**
+	 * Gets a fill from its text representation
+	 * 
+	 * @param input
+	 *            source of fill
+	 * @return fill
+	 * @throws IOException
+	 *             if some kind of I/O error occurs or the data in source is in
+	 *             invalid format
+	 */
+	public Drawable read(Scanner input) throws IOException {
+		Point p = new Point();
+		int color = -1, connectivity = -1;
+
+		this.skip(input);
+		if (input.hasNextInt())
+			p.x = input.nextInt();
+		else
+			throw new IOException("Fill X missing");
+
+		this.skip(input);
+		if (input.hasNextInt())
+			p.y = input.nextInt();
+		else
+			throw new IOException("Fill Y missing");
+
+		this.skip(input);
+		if (input.hasNextInt())
+			color = input.nextInt();
+		else
+			throw new IOException("Fill color missing");
+
+		this.skip(input);
+		if (input.hasNextInt())
+			connectivity = input.nextInt();
+		else
+			throw new IOException("Fill connectivity missing");
+
+		return new Fill(p, color, connectivity);
+	}
+}
